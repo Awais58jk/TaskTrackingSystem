@@ -1,0 +1,16 @@
+.env
+.venv/
+db.sqlite3
+staticfiles/
+media/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/

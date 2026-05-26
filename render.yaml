@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: taskflow
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    preDeployCommand: python manage.py migrate && python manage.py seed_initial_data
+    startCommand: python -m gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.2
+      - key: NODE_VERSION
+        value: 20.20.2
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false
+      - key: DJANGO_ADMIN_EMAIL
+        sync: false
+      - key: DJANGO_ADMIN_PASSWORD
+        sync: false
