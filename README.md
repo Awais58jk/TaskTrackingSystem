@@ -2,6 +2,8 @@
 
 TaskFlow is a full-stack project and task management platform for small teams. It satisfies the assignment requirements with authentication, role-based access, project-categorized tasks, CRUD workflows, responsive UI, database-backed persistence, tests, and a Render-ready deployment path.
 
+Live deployment: https://taskflow-ase-awais58jk.onrender.com
+
 ## Stack
 
 - React 19 + Vite + TypeScript + Tailwind CSS
@@ -76,7 +78,7 @@ npm run test
 ## Assignment Evidence
 
 - GitHub repository: submit the repository URL.
-- Live deployment: submit the Render service URL.
+- Live deployment: https://taskflow-ase-awais58jk.onrender.com
 - Database: Neon PostgreSQL free tier.
 - Security: HttpOnly session cookie, CSRF token on unsafe API methods, role checks on admin routes, and audit logs.
 - Accessibility: semantic layout, keyboard focus states, labeled forms, responsive navigation, and status text for live updates.
