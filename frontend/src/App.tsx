@@ -11,6 +11,7 @@ import {
   Activity,
   AlertTriangle,
   CalendarDays,
+  ChevronUp,
   CheckCircle2,
   ClipboardList,
   FolderKanban,
@@ -19,6 +20,7 @@ import {
   ListChecks,
   Loader2,
   LogOut,
+  Mail,
   Pencil,
   Plus,
   RefreshCcw,
@@ -26,9 +28,10 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  UserCircle,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   BrowserRouter,
   Link,
@@ -517,7 +520,7 @@ function AppShell() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
-      <aside className="hidden border-r border-slate-200 bg-white px-4 py-5 lg:block">
+      <aside className="hidden min-h-screen border-r border-slate-200 bg-white px-4 py-5 lg:flex lg:flex-col">
         <Link to="/app" className="mb-8 flex items-center gap-3 px-2 text-lg font-black">
           <span className="grid h-10 w-10 place-items-center rounded-md bg-slate-950 text-white">
             TF
@@ -544,26 +547,31 @@ function AppShell() {
             </NavLink>
           ))}
         </nav>
+        <div className="mt-auto border-t border-slate-200 pt-4">
+          <ProfileMenu user={user} isAdmin={isAdmin} onLogout={handleLogout} />
+          <Button
+            variant="ghost"
+            className="mt-2 w-full justify-start text-rose-700 hover:bg-rose-50"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Logout
+          </Button>
+        </div>
       </aside>
 
       <div className="min-w-0">
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur md:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-teal-700">
                 {liveMessage}
               </p>
-              <p className="font-bold text-slate-950">
-                {user?.name || user?.email}
-                <Badge className="ml-2 bg-slate-100 text-slate-700 ring-slate-200">
-                  {isAdmin ? "Admin" : "Standard"}
-                </Badge>
-              </p>
+              <p className="font-bold text-slate-950">Workspace command center</p>
             </div>
-            <Button variant="secondary" onClick={handleLogout}>
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-              Logout
-            </Button>
+            <div className="lg:hidden">
+              <ProfileMenu user={user} isAdmin={isAdmin} onLogout={handleLogout} compact />
+            </div>
           </div>
           <nav aria-label="Mobile navigation" className="mt-3 flex gap-2 overflow-x-auto lg:hidden">
             {links.map((item) => (
@@ -589,6 +597,127 @@ function AppShell() {
           <Outlet />
         </section>
       </div>
+    </div>
+  );
+}
+
+function ProfileMenu({
+  user,
+  isAdmin,
+  onLogout,
+  compact = false,
+}: {
+  user: User | null;
+  isAdmin: boolean;
+  onLogout: () => void;
+  compact?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const displayName = user?.name || user?.full_name || user?.email || "TaskFlow user";
+  const initials = displayName
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  return (
+    <div ref={menuRef} className="relative">
+      <button
+        type="button"
+        className={clsx(
+          "flex min-h-11 items-center rounded-md border border-slate-200 bg-white text-left text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50",
+          compact ? "h-11 w-11 justify-center p-0" : "w-full justify-between gap-3 px-3",
+        )}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        aria-label="Open profile menu"
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-700 text-xs font-black text-white">
+            {initials || <UserCircle className="h-5 w-5" aria-hidden="true" />}
+          </span>
+          {!compact && (
+            <span className="min-w-0">
+              <span className="block truncate">{displayName}</span>
+              <span className="block text-xs font-medium text-slate-500">
+                {isAdmin ? "Admin workspace" : "Standard workspace"}
+              </span>
+            </span>
+          )}
+        </span>
+        {!compact && <ChevronUp className="h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />}
+      </button>
+
+      {isOpen && (
+        <div
+          className={clsx(
+            "absolute z-30 w-72 rounded-md border border-slate-200 bg-white p-4 text-sm shadow-xl",
+            compact ? "right-0 top-12" : "bottom-full left-0 mb-3",
+          )}
+          role="dialog"
+          aria-label="Profile details"
+        >
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-slate-950 text-sm font-black text-white">
+              {initials || <UserCircle className="h-6 w-6" aria-hidden="true" />}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate font-bold text-slate-950">{displayName}</p>
+              <p className="mt-1 flex items-center gap-2 break-all text-xs text-slate-600">
+                <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                {user?.email}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-2 rounded-md bg-slate-50 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-500">Role</span>
+              <Badge className="bg-white text-slate-700 ring-slate-200">
+                {isAdmin ? "Admin" : "Standard"}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-slate-500">Account</span>
+              <span className="font-semibold text-emerald-700">Active</span>
+            </div>
+          </div>
+
+          <Button
+            variant="secondary"
+            className="mt-4 w-full justify-center text-rose-700 hover:bg-rose-50"
+            onClick={onLogout}
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            Logout
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
